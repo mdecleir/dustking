@@ -82,8 +82,17 @@ def main():
     # Create the plot
     fig, ax = plt.subplots(3, 3, figsize=(12, 9), sharex="col", sharey="row")
 
-    # Obtain the data
+    # Obtain the catalog with data
     catalog = Table.read(inpath + "DustKING.cat", format="ascii")
+
+    # Exclude galaxies
+    row_mask = np.full_like(catalog, False, dtype=bool)
+    exclude = ["IC0342"]
+    for galaxy in exclude:
+        row_mask += catalog["id"] == galaxy
+    catalog = catalog[~row_mask]
+
+    # Obtain the data
     uw2 = catalog["SWIFT_UVW2"]
     um2 = catalog["SWIFT_UVM2"]
     uw1 = catalog["SWIFT_UVW1"]
@@ -153,12 +162,12 @@ def main():
     ax[0, 1].axis("off")
     ax[0, 2].axis("off")
     ax[1, 2].axis("off")
-    ax[0, 0].set_xlim(-0.2, 1.7)
-    ax[0, 0].set_ylim(-0.6, 0.75)
-    ax[1, 0].set_ylim(-0.3, 2)
-    ax[2, 0].set_xlim(-0.3, 3)
-    ax[2, 1].set_xlim(-0.75, 0.75)
-    ax[2, 2].set_xlim(-0.3, 2)
+    ax[0, 0].set_xlim(-0.2, 1.6)
+    ax[0, 0].set_ylim(-0.8, 0.4)
+    ax[1, 0].set_ylim(-0.2, 1.8)
+    ax[2, 0].set_ylim(-0.4, 2.4)
+    ax[2, 1].set_xlim(-0.8, 0.25)
+    ax[2, 2].set_xlim(-0.2, 1.75)
 
     plt.tight_layout()
     plt.subplots_adjust(wspace=0, hspace=0)
