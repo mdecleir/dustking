@@ -153,12 +153,12 @@ def main():
     plot_curves(ax[2, 2], curve_tables, "UVM2-UVW1", "FUV-NUV")
 
     # Finish the figure
-    ax[0, 0].set_ylabel("UVW2 - UVM2", fontsize=size)
-    ax[1, 0].set_ylabel("UVM2 - UVW1", fontsize=size)
-    ax[2, 0].set_xlabel("UVW2 - UVW1", fontsize=size)
-    ax[2, 0].set_ylabel("FUV - NUV", fontsize=size)
-    ax[2, 1].set_xlabel("UVW2 - UVM2", fontsize=size)
-    ax[2, 2].set_xlabel("UVM2 - UVW1", fontsize=size)
+    ax[0, 0].set_ylabel("UVW2 - UVM2 \n (1991 $\AA$ - 2221 $\AA$)", fontsize=size)
+    ax[1, 0].set_ylabel("UVM2 - UVW1\n (2221 $\AA$ - 2486 $\AA$)", fontsize=size)
+    ax[2, 0].set_xlabel("UVW2 - UVW1\n (1991 $\AA$ - 2486 $\AA$)", fontsize=size)
+    ax[2, 0].set_ylabel("FUV - NUV\n (1528 $\AA$ - 2271 $\AA$)", fontsize=size)
+    ax[2, 1].set_xlabel("UVW2 - UVM2\n (1991 $\AA$ - 2221 $\AA$)", fontsize=size)
+    ax[2, 2].set_xlabel("UVM2 - UVW1\n (2221 $\AA$ - 2486 $\AA$)", fontsize=size)
     ax[0, 1].axis("off")
     ax[0, 2].axis("off")
     ax[1, 2].axis("off")
