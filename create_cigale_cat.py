@@ -50,6 +50,15 @@ def TIR(flux_table, filters, galaxy):
     L = np.zeros(5)
     L_err = np.zeros(5)
 
+    # For NGC0584, use the formulation with only 4 bands (exclude the upper limit for SPIRE 250)
+    if galaxy == "NGC0584":
+        filters = ["MIPS24", "PACS70", "PACS100", "PACS160"]
+        wavelengths = [23.8e-6, 71.8e-6, 103.0e-6, 167.0e-6]
+        coeffs = np.array([2.064, 0.539, 0.277, 0.938])
+        coeffs_err = np.array([0.091, 0.030, 0.017, 0.012])
+        L = np.zeros(4)
+        L_err = np.zeros(4)
+
     # Convert the IR flux densities and their uncertainties (in Jy) to solar luminosities (L_sol)
     # 1 Jy = 1e-26 * 4 * pi * (D[m])^2 * c / lambda / 3.828e26 L_sol
     for i, filter in enumerate(filters):
@@ -78,7 +87,11 @@ def TIR(flux_table, filters, galaxy):
     LTIR = np.sum(coeffs * L)
     LTIR_err = np.sqrt(np.sum(L ** 2 * coeffs_err ** 2 + coeffs ** 2 * L_err ** 2))
 
-    # Convert the units of the TIR luminosity from L_sol to W
+    # For galaxies that have an upper limit for LTIR (i.e. the uncertainty is nan), take -LTIR as the uncertainty so that CIGALE will treat it as an upper limit
+    if np.isnan(LTIR_err):
+        LTIR_err = -LTIR
+
+    # Convert the units of the TIR luminosity and its uncertainty from L_sol to W, and save the luminosity and uncertainty in the table
     flux_table.loc[galaxy, "TIR(W)"] = LTIR * 3.828e26
     flux_table.loc[galaxy, "TIR_err(W)"] = LTIR_err * 3.828e26
 
