@@ -60,7 +60,7 @@ def TIR(flux_table, filters, galaxy):
         L_err = np.zeros(4)
 
     # Convert the IR flux densities and their uncertainties (in Jy) to solar luminosities (L_sol)
-    # 1 Jy = 1e-26 * 4 * pi * (D[m])^2 * c / lambda / 3.828e26 L_sol
+    # 1 Jy = 1e-26 * 4 * pi * (D[m])^2 * c[m/s] / lambda[m] / 3.828e26 L_sol
     for i, filter in enumerate(filters):
         L[i] = (
             flux_table.loc[galaxy, filter]
@@ -198,17 +198,85 @@ def write_line_without_SWIFT(frame, flux_table, galaxy):
     ]
 
 
+def table_swift(outpath, flux_table):
+    """
+    Create tables with the Swift photometry:
+    - One in text file format
+    - One in latex format
+    """
+    # Retrieve the columns of interest, convert the flux densitites from Jy to mJy, and convert the exposure times to integers
+    table = flux_table[
+        [
+            "t_UVW2 (s)",
+            "t_UVM2 (s)",
+            "t_UVW1 (s)",
+            "UVW2",
+            "UVW2_err",
+            "UVM2",
+            "UVM2_err",
+            "UVW1",
+            "UVW1_err",
+        ]
+    ]
+    table[
+        [
+            "UVW2",
+            "UVW2_err",
+            "UVM2",
+            "UVM2_err",
+            "UVW1",
+            "UVW1_err",
+        ]
+    ] *= 1000
+    table = table.astype(
+        {"t_UVW2 (s)": "int", "t_UVM2 (s)": "int", "t_UVW1 (s)": "int"}
+    )
+
+    # Write the table to a text file
+    table.to_csv(
+        outpath + "swift_phot.txt",
+        sep=" ",
+        na_rep="nan",
+        header=[
+            "t_UVW2(s)",
+            "t_UVM2(s)",
+            "t_UVW1(s)",
+            "UVW2(mJy)",
+            "UVW2_unc(mJy)",
+            "UVM2(mJy)",
+            "UVM2_unc(mJy)",
+            "UVW1(mJy)",
+            "UVW1_unc(mJy)",
+        ],
+    )
+
+    # Write the table in latex format
+    styler = table.style
+    styler.format(precision=2, na_rep="\multicolumn{2}{c}{...}")
+    styler.to_latex(
+        outpath + "swift_phot.tex",
+        column_format="lcccr@{ $\pm$ }lr@{ $\pm$ }lr@{ $\pm$ }l",
+        environment="table*",
+        hrules=True,
+        caption="Total UVOT exposure times (in seconds) and flux densities (in mJy) for the KINGFISH sample.",
+        label="tab:swift_phot",
+    )
+
+
 def main():
     # Define the data path and the output path
-    data_path = "/Users/mdecleir/Documents/DustKING/Data/"
-    out_path = "/Users/mdecleir/Documents/DustKING/Cigale_fitting/"
+    datapath = "/Users/mdecleir/Documents/DustKING/Data/"
+    outpath = "/Users/mdecleir/Documents/DustKING/Cigale_fitting/"
 
     # Read the Excel file with the fluxes, uncertainties, and other input parameters
     flux_table = pd.read_excel(
-        data_path + "KINGFISH_fluxes.xlsx",
+        datapath + "KINGFISH_fluxes.xlsx",
         sheet_name="fluxes_new",
         index_col=0,
     )
+
+    # Create tables with the Swift photometry
+    table_swift(outpath, flux_table)
 
     # List the filters
     filters = [
@@ -358,6 +426,7 @@ def main():
 
         # Avoid overweight in the optical bands
         optical(flux_table, galaxy)
+
         # Calculate the TIR luminosity
         TIR(flux_table, filters, galaxy)
 
@@ -366,10 +435,10 @@ def main():
         write_line_without_SWIFT(frame_without, flux_table, galaxy)
 
     Table.from_pandas(frame_with).write(
-        out_path + "DustKING.cat", format="ascii", overwrite=True
+        outpath + "DustKING.cat", format="ascii", overwrite=True
     )
     Table.from_pandas(frame_without).write(
-        out_path + "DustKING_noSWIFT.cat", format="ascii", overwrite=True
+        outpath + "DustKING_noSWIFT.cat", format="ascii", overwrite=True
     )
 
 
